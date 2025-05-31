@@ -9,6 +9,8 @@ export default function EmojiHeist() {
   const [gridEmojis, setGridEmojis] = useState([]);
   const [gameState, setGameState] = useState('memorize');
   const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(() => Number(localStorage.getItem('emojiHighScore')) || 0);
+  const [newHighScore, setNewHighScore] = useState(false);
   const [selected, setSelected] = useState([]);
   const [timeLeft, setTimeLeft] = useState(10);
 
@@ -37,12 +39,21 @@ export default function EmojiHeist() {
     }
   }, [gameState]);
 
+  useEffect(() => {
+    if (score > highScore) {
+      setHighScore(score);
+      localStorage.setItem('emojiHighScore', score);
+      setNewHighScore(true);
+    }
+  }, [score]);
+
   const generateEmojis = () => {
     const targets = shuffle([...allEmojis]).slice(0, level + 2);
     const decoys = shuffle([...allEmojis].filter(e => !targets.includes(e))).slice(0, 6);
     setTargetEmojis(targets);
     setGridEmojis(shuffle([...targets, ...decoys]));
     setSelected([]);
+    setNewHighScore(false);
   };
 
   const handleEmojiClick = (emoji) => {
@@ -74,8 +85,10 @@ export default function EmojiHeist() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-start px-4 pt-12 pb-10 bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white font-sans">
-      <h1 className="text-4xl sm:text-5xl font-extrabold text-yellow-400 drop-shadow-lg mb-4 tracking-wide">Emoji Heist</h1>
-      <p className="text-sm sm:text-base text-gray-300 mb-2 uppercase tracking-wider">Level: {level} | Score: {score}</p>
+      <h1 className="text-4xl sm:text-5xl font-extrabold text-yellow-400 drop-shadow-lg mb-2 tracking-wide">Emoji Heist</h1>
+      <p className="text-sm sm:text-base text-gray-300 mb-1 uppercase tracking-wider">Level: {level} | Score: {score}</p>
+      <p className="text-xs text-green-400 mb-1 uppercase">High Score: {highScore}</p>
+      {newHighScore && <p className="text-xs text-pink-400 animate-pulse mb-4">🎉 New High Score! 🎉</p>}
 
       <AnimatePresence>
         {gameState === 'memorize' && (
@@ -143,6 +156,10 @@ export default function EmojiHeist() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <footer className="mt-10 text-xs text-gray-400 text-center">
+        Made with 💻 by <a href="https://instagram.com/_imsultan" target="_blank" className="text-pink-400 hover:underline">@_imsultan</a>
+      </footer>
     </div>
   );
 }
